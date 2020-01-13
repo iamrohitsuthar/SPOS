@@ -4,12 +4,13 @@ package rohitsuthar.models;
 	Symbol no, name, and its address
 */
 public class Symbol {
-	private static int no = 0;
+	private static int no = 1;
+	private int number =  0;
 	private long address;
 	private String name;
 	
 	public Symbol(String name, long address) {
-		no++;
+		number = no++;
 		this.name = name;
 		this.address = address;
 	}
@@ -18,8 +19,8 @@ public class Symbol {
 		this.address = address;
 	}
 	
-	public int getNo() {
-		return no;
+	public int getNumber() {
+		return number;
 	}
 	
 	public long getAddress() {

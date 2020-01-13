@@ -18,7 +18,7 @@ public class Literal {
 		this.address = address;
 	}
 	
-	public int getNo() {
+	public int getNumber() {
 		return no;
 	}
 	
