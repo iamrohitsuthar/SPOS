@@ -42,7 +42,7 @@ public class RoundRobin {
 				prevTime = time;
 				time += quantumTime;
 				process.setRemainingBurstTime(process.getRemainingBurstTime() - quantumTime);
-				if(time <= lastArrivalTime)
+				if(prevTime <= lastArrivalTime)
 					fillReadyQueue(time, prevTime, priorityQueue);
 				readyQueue.remove();
 				readyQueue.add(process);
