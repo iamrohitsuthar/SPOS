@@ -2,14 +2,14 @@ package rohitsuthar.models;
 
 public class MnemonicsEntry {
 	private String type;
-	private int code;
+	private String code;
 	
-	public MnemonicsEntry(String type, int code) {
+	public MnemonicsEntry(String type, String code) {
 		this.type = type;
 		this.code = code;
 	}
 	
-	public int getCode() {
+	public String getCode() {
 		return code;
 	}
 	

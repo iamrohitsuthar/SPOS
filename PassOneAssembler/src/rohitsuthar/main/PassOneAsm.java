@@ -54,7 +54,7 @@ public class PassOneAsm {
 			bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream("OPTAB.txt")));
 			while((line = bufferedReader.readLine()) != null) {
 				String []arr = line.split(" ");
-				mnemonics.put(arr[0], new MnemonicsEntry(arr[1], Integer.parseInt(arr[2])));
+				mnemonics.put(arr[0], new MnemonicsEntry(arr[1], arr[2]));
 			}
 			bufferedReader.close();
 		}
@@ -74,6 +74,13 @@ public class PassOneAsm {
 	    	
 	    }
 		
+	    private String format(int data) {
+	    	String raw = String.valueOf(data);
+	    	if(data <= 9)
+	    		raw = "0"+String.valueOf(data);
+	    	return raw;
+	    }
+	    
 		public void parse(BufferedReader bufferedReader) {
 			poolTable.add(0);
 			try {
@@ -98,9 +105,9 @@ public class PassOneAsm {
 							else {
 								if(!symbolTable.containsKey(arr[2])) {
 									symbolTable.put(arr[2], new Symbol(symbol_table_track++, -1));
-									writeIntermediateCode("(S," + symbolTable.get(arr[2]).getNumber() + ")");
+									writeIntermediateCode("(S," + format(symbolTable.get(arr[2]).getNumber()) + ")");
 								}else {
-									writeIntermediateCode("(S," + symbolTable.get(arr[2]).getNumber() + ")");
+									writeIntermediateCode("(S," + format(symbolTable.get(arr[2]).getNumber()) + ")");
 								}
 							}
 						}
@@ -121,7 +128,7 @@ public class PassOneAsm {
 									if(key.equals(data)) {
 										if(address == -1) {
 											isPresent = true;
-											writeIntermediateCode("(L," + i + ")");
+											writeIntermediateCode("(L," + format(i) + ")");
 										}
 									}
 									i++;
@@ -129,7 +136,7 @@ public class PassOneAsm {
 								if(!isPresent) {
 									linkedHashMap = new LinkedHashMap<String, Integer>();
 									linkedHashMap.put(data, -1);
-									writeIntermediateCode("(L," + literal_table_track + ")");
+									writeIntermediateCode("(L," + format(literal_table_track) + ")");
 									literalTable.add(literal_table_track++,linkedHashMap);
 								}
 								isPresent = false;
@@ -138,9 +145,9 @@ public class PassOneAsm {
 								//symbol
 								if(!symbolTable.containsKey(arr[3])) {
 									symbolTable.put(arr[3], new Symbol(symbol_table_track++, -1));
-									writeIntermediateCode("(S," + symbolTable.get(arr[3]).getNumber() + ")");
+									writeIntermediateCode("(S," + format(symbolTable.get(arr[3]).getNumber()) + ")");
 								}else {
-									writeIntermediateCode("(S," + symbolTable.get(arr[3]).getNumber() + ")");
+									writeIntermediateCode("(S," + format(symbolTable.get(arr[3]).getNumber()) + ")");
 								}
 							}
 						}
@@ -190,6 +197,7 @@ public class PassOneAsm {
 							else if(data.contains("-")) {
 								symbol1.setAddress(symbol.getAddress() - num);
 							}
+							writeIntermediateCode("\n");
 						}
 						else if(arr[1].equals("ORIGIN")) {
 							String data = arr[2];
@@ -202,11 +210,11 @@ public class PassOneAsm {
 							int num = Integer.parseInt(data.substring(index+1,data.length()));
 							if(data.contains("+")) {
 								lineCount = (int) (symbolTable.get(code).getAddress() + num);
-								writeIntermediateCode("(S," + symbolTable.get(code).getNumber() + ")+"+num);
+								writeIntermediateCode("(S," + format(symbolTable.get(code).getNumber()) + ")+"+num);
 							}
 							else if(data.contains("-")) {
 								lineCount = (int) (symbolTable.get(code).getAddress() - num);
-								writeIntermediateCode("(S," + symbolTable.get(code).getNumber() + ")-"+num);
+								writeIntermediateCode("(S," + format(symbolTable.get(code).getNumber()) + ")-"+num);
 							}
 							writeIntermediateCode("\n");
 						}
