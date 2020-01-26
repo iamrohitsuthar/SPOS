@@ -168,10 +168,12 @@ public class PassOneAsm {
 					}
 					else {
 						if(arr[1].equals("START")) {
-							lineCount = Integer.parseInt(arr[2]);
+							if(arr.length > 2) {
+								lineCount = Integer.parseInt(arr[2]);
+							}
 							mnemonicsEntryItem = mnemonics.get(arr[1]);
 							writeIntermediateCode("\t(" + mnemonicsEntryItem.getType() + "," + mnemonicsEntryItem.getCode() + ")");
-							writeIntermediateCode("(C," + arr[2] + ")");
+							writeIntermediateCode("(C," + lineCount + ")");
 							writeIntermediateCode("\n");
 						}
 						else if(arr[1].equals("EQU")) {
