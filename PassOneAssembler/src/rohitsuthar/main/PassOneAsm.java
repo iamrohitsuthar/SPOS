@@ -9,8 +9,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -21,18 +23,22 @@ import rohitsuthar.others.Msg;
 
 public class PassOneAsm {
 		private String line;
-		private Hashtable<String, Literal> literalTable;
+		private ArrayList<LinkedHashMap<String, Integer>> literalTable;
 		private LinkedHashMap<String, Symbol> symbolTable;
 		private HashMap<String, MnemonicsEntry> mnemonics;
+		private ArrayList<Integer> poolTable;
 		private static BufferedReader bufferedReader = null;
 		private int lineCount = 0;
 		private MnemonicsEntry mnemonicsEntryItem;
 		BufferedWriter icBufferedWriter = null;
-		
+		private int symbol_table_track = 0;
+		private int literal_table_track = 0;
+		private boolean isPresent = false;
 		
 		public PassOneAsm() {
-			literalTable = new Hashtable<String, Literal>();
+			literalTable = new ArrayList<LinkedHashMap<String,Integer>>();
 			symbolTable = new LinkedHashMap<String, Symbol>();
+			poolTable = new ArrayList<Integer>();
 			mnemonics = new HashMap<String, MnemonicsEntry>();
 			try {
 				getMnemonicsData();
@@ -61,18 +67,7 @@ public class PassOneAsm {
 		private void writeIntermediateCode(String data) throws IOException {
 			icBufferedWriter.write(data);
 			icBufferedWriter.flush();
-			Msg.println("Written Successfully");
 		}
-		
-	    private static boolean isNumber(String s) 
-	    { 
-	        for (int i = 0; i < s.length(); i++) 
-	        if (Character.isDigit(s.charAt(i))  
-	            == false) 
-	            return false; 
-	  
-	        return true; 
-	    }
 	    
 	    private int getOperatorIndex(String data) {
 	    	int index = -1;
@@ -85,54 +80,90 @@ public class PassOneAsm {
 	    }
 		
 		public void parse(BufferedReader bufferedReader) {
+			poolTable.add(0);
 			try {
 				while((line = bufferedReader.readLine()) != null) {
 					String []arr = line.split("\t");
-					writeIntermediateCode(line);
-					
 					if(!arr[0].isEmpty()) {
 						if(!symbolTable.containsKey(arr[0])) {
-							symbolTable.put(arr[0], new Symbol(arr[0], lineCount));
+							symbolTable.put(arr[0], new Symbol(symbol_table_track++, lineCount));
 						}
 					}
-						
-					
 					if(mnemonics.get(arr[1]).isImperative()) {
 						// IS Statements
-						writeIntermediateCode("\t"+lineCount);
+						writeIntermediateCode(String.valueOf(lineCount));
 						mnemonicsEntryItem = mnemonics.get(arr[1]);
 						writeIntermediateCode("\t(" + mnemonicsEntryItem.getType() + "," + mnemonicsEntryItem.getCode() + ")");
 						
-						if(mnemonics.containsKey(arr[2].substring(0, arr[2].length()-1))) {
-							writeIntermediateCode("(" + mnemonics.get(arr[2].substring(0, arr[2].length()-1)).getCode() + ")");
-						}
-						else {
-							if(!symbolTable.containsKey(arr[2])) {
-								Msg.println(arr[2] + " there");
-								symbolTable.put(arr[2], new Symbol(arr[2], -1));
-								writeIntermediateCode("(S," + symbolTable.get(arr[2]).getNumber() + ")");
-							}else {
-								Msg.println(arr[2] + " here");
-								writeIntermediateCode("(S," + symbolTable.get(arr[2]).getNumber() + ")");
+						if(arr.length > 2) {
+							// for stop condition
+							if(mnemonics.containsKey(arr[2].substring(0, arr[2].length()-1))) {
+								writeIntermediateCode("(" + mnemonics.get(arr[2].substring(0, arr[2].length()-1)).getCode() + ")");
+							}
+							else {
+								if(!symbolTable.containsKey(arr[2])) {
+									symbolTable.put(arr[2], new Symbol(symbol_table_track++, -1));
+									writeIntermediateCode("(S," + symbolTable.get(arr[2]).getNumber() + ")");
+								}else {
+									writeIntermediateCode("(S," + symbolTable.get(arr[2]).getNumber() + ")");
+								}
 							}
 						}
-						
+
 						if(arr.length == 4) {
 							// fourth parameter is present
 							// -1 means address is not allocated at this time
-							symbolTable.put(arr[3], new Symbol(arr[3], -1));
-							writeIntermediateCode("(S," + symbolTable.get(arr[3]).getNumber() + ")");
+							if(arr[3].contains("=")) {
+								//literal
+								String data = arr[3];
+								Iterator<LinkedHashMap<String, Integer>> iterator = literalTable.iterator();
+								LinkedHashMap<String , Integer> linkedHashMap;
+								int i = 0;
+								while(iterator.hasNext()) {
+									LinkedHashMap<String, Integer> hashMap = iterator.next();
+									String key = hashMap.entrySet().iterator().next().getKey();
+									Integer address = hashMap.entrySet().iterator().next().getValue();
+									if(key.equals(data)) {
+										if(address == -1) {
+											isPresent = true;
+											writeIntermediateCode("(L," + i + ")");
+										}
+									}
+									i++;
+								}
+								if(!isPresent) {
+									linkedHashMap = new LinkedHashMap<String, Integer>();
+									linkedHashMap.put(data, -1);
+									writeIntermediateCode("(L," + literal_table_track + ")");
+									literalTable.add(literal_table_track++,linkedHashMap);
+								}
+								isPresent = false;
+							}
+							else {
+								//symbol
+								if(!symbolTable.containsKey(arr[3])) {
+									symbolTable.put(arr[3], new Symbol(symbol_table_track++, -1));
+									writeIntermediateCode("(S," + symbolTable.get(arr[3]).getNumber() + ")");
+								}else {
+									writeIntermediateCode("(S," + symbolTable.get(arr[3]).getNumber() + ")");
+								}
+							}
 						}
 						writeIntermediateCode("\n");
 						lineCount++;
 					}
 					else if(mnemonics.get(arr[1]).isDeclarative()) {
 						//DL Statements
-						writeIntermediateCode("\t"+lineCount);
+						writeIntermediateCode(String.valueOf(lineCount));
 						mnemonicsEntryItem = mnemonics.get(arr[1]);
 						writeIntermediateCode("\t(" + mnemonicsEntryItem.getType() + "," + mnemonicsEntryItem.getCode() + ")");
-						writeIntermediateCode("(C," + arr[2] + ")");
+						String constantData = arr[2];
+						constantData = constantData.replace("\'", "");
+						writeIntermediateCode("(C," + constantData + ")");
 						writeIntermediateCode("\n");
+						Symbol symbol = symbolTable.get(arr[0]);
+						symbol.setAddress(lineCount);
+						symbolTable.replace(arr[0], symbol);
 						if(arr[1].equals("DS")) {
 							lineCount += Integer.parseInt(arr[2]);
 						}
@@ -146,6 +177,7 @@ public class PassOneAsm {
 							mnemonicsEntryItem = mnemonics.get(arr[1]);
 							writeIntermediateCode("\t(" + mnemonicsEntryItem.getType() + "," + mnemonicsEntryItem.getCode() + ")");
 							writeIntermediateCode("(C," + arr[2] + ")");
+							writeIntermediateCode("\n");
 						}
 						else if(arr[1].equals("EQU")) {
 							String data = arr[2];
@@ -154,39 +186,79 @@ public class PassOneAsm {
 							int num = Integer.parseInt(data.substring(index+1,data.length()));
 							
 							Symbol symbol = symbolTable.get(code);
-							Msg.println("SYM1 " + arr[0] + " val: "+symbolTable.get(arr[0]).getNumber());
+							Symbol symbol1 = symbolTable.get(arr[0]);
 							if(data.contains("+")) {
-								symbol.setAddress(symbol.getAddress() + num);
-								Msg.println("SYM123 " + arr[0] + " val: "+ symbol.getNumber());
-								Msg.println("SYM2 " + arr[0] + " val: "+symbolTable.get(arr[0]).getNumber());
-								symbolTable.replace(arr[0], symbol);
-								Msg.println("SYM3 " + arr[0] + " val: "+symbolTable.get(arr[0]).getNumber());
+								symbol1.setAddress(symbol.getAddress() + num);
 							}
 							else if(data.contains("-")) {
-								symbol.setAddress(symbol.getAddress() - num);
-								symbolTable.replace(arr[0], symbol);
+								symbol1.setAddress(symbol.getAddress() - num);
 							}
-							Msg.println("SYM " + arr[0] + " val: "+symbolTable.get(arr[0]).getNumber());
 						}
 						else if(arr[1].equals("ORIGIN")) {
 							String data = arr[2];
 							int index = getOperatorIndex(data);
 							
+							mnemonicsEntryItem = mnemonics.get(arr[1]);
+							writeIntermediateCode("\t(" + mnemonicsEntryItem.getType() + "," + mnemonicsEntryItem.getCode() + ")");
+							
 							String code = data.substring(0, index);
 							int num = Integer.parseInt(data.substring(index+1,data.length()));
-							if(data.contains("+"))
+							if(data.contains("+")) {
 								lineCount = (int) (symbolTable.get(code).getAddress() + num);
-							else if(data.contains("-"))
+								writeIntermediateCode("(S," + symbolTable.get(code).getNumber() + ")+"+num);
+							}
+							else if(data.contains("-")) {
 								lineCount = (int) (symbolTable.get(code).getAddress() - num);
-							Msg.println("Line count: "+lineCount);
-							
+								writeIntermediateCode("(S," + symbolTable.get(code).getNumber() + ")-"+num);
+							}
+							writeIntermediateCode("\n");
 						}
-						writeIntermediateCode("\n");
+						else if(arr[1].equals("END")) {
+							mnemonicsEntryItem = mnemonics.get(arr[1]);
+							writeIntermediateCode("\t(" + mnemonicsEntryItem.getType() + "," + mnemonicsEntryItem.getCode() + ")");
+							writeIntermediateCode("\n");
+							Iterator<LinkedHashMap<String, Integer>> iterator = literalTable.iterator();
+							while(iterator.hasNext()) {
+								LinkedHashMap<String, Integer> hashMap = iterator.next();
+								String key = hashMap.entrySet().iterator().next().getKey();
+								Integer address = hashMap.entrySet().iterator().next().getValue();
+								if(address == -1) {
+									String key1 = key;
+									key1 = key1.replace("\'", "");
+									key1 = key1.replace("=", "");
+									writeIntermediateCode(String.valueOf(lineCount));
+									writeIntermediateCode("\t(DL,1)(C,"+key1+")\n");
+									hashMap.replace(key, lineCount);
+									lineCount++;
+								}
+							}
+							writeIntermediateCode("\n");
+						}
+						else if(arr[1].equals("LTORG")) {
+							Iterator<LinkedHashMap<String, Integer>> iterator = literalTable.iterator();
+							while(iterator.hasNext()) {
+								LinkedHashMap<String, Integer> hashMap = iterator.next();
+								String key = hashMap.entrySet().iterator().next().getKey();
+								Integer address = hashMap.entrySet().iterator().next().getValue();
+								if(address == -1) {
+									String key1 = key;
+									key1 = key1.replace("\'", "");
+									key1 = key1.replace("=", "");
+									writeIntermediateCode(String.valueOf(lineCount));
+									writeIntermediateCode("\t(DL,1)(C,"+key1+")\n");
+									hashMap.replace(key, lineCount);
+									lineCount++;
+								}
+							}
+							poolTable.add(literal_table_track);
+						}
 					}
 							
 				}
 				writeSymbolTable();
 				writeLiteralTable();
+				writePoolTable();
+				Msg.println("Done");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -194,10 +266,13 @@ public class PassOneAsm {
 		
 	private void writeSymbolTable() {
 		try {
+			icBufferedWriter.close();
 			icBufferedWriter = new BufferedWriter(new FileWriter("SYMTAB.txt"));
 			for (Map.Entry<String, Symbol> entry : symbolTable.entrySet()) {
 				Symbol symbol = entry.getValue();
-			    icBufferedWriter.write(symbol.getNumber() + " " + symbol.getName() + " " + symbol.getAddress());
+				String key = entry.getKey();
+			    icBufferedWriter.write(key + " " + symbol.getAddress());
+			    icBufferedWriter.write("\n");
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -209,16 +284,37 @@ public class PassOneAsm {
 	
 	private void writeLiteralTable() {
 		try {
+			icBufferedWriter.close();
 			icBufferedWriter = new BufferedWriter(new FileWriter("LITTAB.txt"));
-			for (Map.Entry<String, Literal> entry : literalTable.entrySet()) {
-				Literal literal = entry.getValue();
-			    icBufferedWriter.write(literal.getNumber() + " " + literal.getName() + " " + literal.getAddress());
+			Iterator<LinkedHashMap<String, Integer>> iterator = literalTable.iterator();
+			while(iterator.hasNext()) {
+				LinkedHashMap<String, Integer> hashMap = iterator.next();
+				String key = hashMap.entrySet().iterator().next().getKey();
+				Integer address = hashMap.entrySet().iterator().next().getValue();
+				icBufferedWriter.write(key + " " + address);
+			    icBufferedWriter.write("\n");
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+	}
+	
+	private void writePoolTable() {
+		try {
+			icBufferedWriter.close();
+			icBufferedWriter = new BufferedWriter(new FileWriter("POOLTAB.txt"));
+			Iterator<Integer> poolIterator = poolTable.iterator();
+			while(poolIterator.hasNext()) {
+			    icBufferedWriter.write(String.valueOf(poolIterator.next()));
+			    icBufferedWriter.write("\n");
+			}
+			icBufferedWriter.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

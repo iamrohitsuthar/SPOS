@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import rohitsuthar.main.PassOneAsm;
 
 public class Main {
-	private static final String FILE_NAME = "demo.asm";
+	private static final String FILE_NAME = "ad.asm";
 	private static BufferedReader bufferedReader = null;
 	
 	public static void main(String[] args) {
