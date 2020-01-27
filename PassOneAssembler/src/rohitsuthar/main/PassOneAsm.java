@@ -232,7 +232,7 @@ public class PassOneAsm {
 									key1 = key1.replace("\'", "");
 									key1 = key1.replace("=", "");
 									writeIntermediateCode(String.valueOf(lineCount));
-									writeIntermediateCode("\t(DL,1)(C,"+key1+")\n");
+									writeIntermediateCode("\t(DL,01)(C,"+key1+")\n");
 									hashMap.replace(key, lineCount);
 									lineCount++;
 								}
@@ -250,7 +250,7 @@ public class PassOneAsm {
 									key1 = key1.replace("\'", "");
 									key1 = key1.replace("=", "");
 									writeIntermediateCode(String.valueOf(lineCount));
-									writeIntermediateCode("\t(DL,1)(C,"+key1+")\n");
+									writeIntermediateCode("\t(DL,01)(C,"+key1+")\n");
 									hashMap.replace(key, lineCount);
 									lineCount++;
 								}
@@ -270,14 +270,16 @@ public class PassOneAsm {
 	}
 		
 	private void writeSymbolTable() {
+		int i = 0;
 		try {
 			icBufferedWriter.close();
 			icBufferedWriter = new BufferedWriter(new FileWriter("SYMTAB.txt"));
 			for (Map.Entry<String, Symbol> entry : symbolTable.entrySet()) {
 				Symbol symbol = entry.getValue();
 				String key = entry.getKey();
-			    icBufferedWriter.write(key + " " + symbol.getAddress());
+			    icBufferedWriter.write(i+ " " + key + " " + symbol.getAddress());
 			    icBufferedWriter.write("\n");
+			    i++;
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -289,6 +291,7 @@ public class PassOneAsm {
 	
 	private void writeLiteralTable() {
 		try {
+			int i = 0;
 			icBufferedWriter.close();
 			icBufferedWriter = new BufferedWriter(new FileWriter("LITTAB.txt"));
 			Iterator<LinkedHashMap<String, Integer>> iterator = literalTable.iterator();
@@ -296,8 +299,9 @@ public class PassOneAsm {
 				LinkedHashMap<String, Integer> hashMap = iterator.next();
 				String key = hashMap.entrySet().iterator().next().getKey();
 				Integer address = hashMap.entrySet().iterator().next().getValue();
-				icBufferedWriter.write(key + " " + address);
+				icBufferedWriter.write(i + " " + key + " " + address);
 			    icBufferedWriter.write("\n");
+			    i++;
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
