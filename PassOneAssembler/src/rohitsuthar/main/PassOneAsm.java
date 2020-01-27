@@ -92,6 +92,21 @@ public class PassOneAsm {
 						if(!symbolTable.containsKey(arr[0])) {
 							symbolTable.put(arr[0], new Symbol(symbol_table_track++, lineCount));
 						}
+						else if(forwardReference.containsKey(arr[0])) {
+							Symbol symbol = symbolTable.get(arr[0]);
+							symbol.setAddress(lineCount);
+							//check forward reference data
+							if(forwardReference.containsKey(arr[0])) {
+								ArrayList<String> arrayList = forwardReference.get(arr[0]);
+								Iterator<String> iterator = arrayList.iterator();
+								while(iterator.hasNext()) {
+									String key = iterator.next();
+									Symbol symbol2 = symbolTable.get(key);
+									symbol2.setAddress(symbol2.getAddress() + symbolTable.get(arr[0]).getAddress());
+								}
+								forwardReference.remove(arr[0]);
+							}
+						}
 					}
 					if(mnemonics.get(arr[1]).isImperative()) {
 						// IS Statements
@@ -183,6 +198,7 @@ public class PassOneAsm {
 								Symbol symbol2 = symbolTable.get(key);
 								symbol2.setAddress(symbol2.getAddress() + symbolTable.get(arr[0]).getAddress());
 							}
+							forwardReference.remove(arr[0]);
 						}
 						
 					}
@@ -204,12 +220,32 @@ public class PassOneAsm {
 							
 							if(symbolTable.containsKey(code)) {
 								Symbol symbol = symbolTable.get(code);
-								Symbol symbol1 = symbolTable.get(arr[0]);
-								if(data.contains("+")) {
-									symbol1.setAddress(symbol.getAddress() + num);
+								if(symbol.getAddress() != -1) {
+									Symbol symbol1 = symbolTable.get(arr[0]);
+									if(data.contains("+")) {
+										symbol1.setAddress(symbol.getAddress() + num);
+									}
+									else if(data.contains("-")) {
+										symbol1.setAddress(symbol.getAddress() - num);
+									}
 								}
-								else if(data.contains("-")) {
-									symbol1.setAddress(symbol.getAddress() - num);
+								else {
+									Symbol symbol1 = symbolTable.get(arr[0]);
+									if(data.contains("+")) {
+										symbol1.setAddress(0 + num);
+									}
+									else if(data.contains("-")) {
+										symbol1.setAddress(0 - num);
+									}
+									if(forwardReference.containsKey(code)) {
+										ArrayList<String> arrayList = forwardReference.get(code);
+										arrayList.add(arr[0]);
+									}
+									else {
+										ArrayList<String> arrayList = new ArrayList<String>();
+										arrayList.add(arr[0]);
+										forwardReference.put(code, arrayList);
+									}
 								}
 							}
 							else {
@@ -232,7 +268,17 @@ public class PassOneAsm {
 									forwardReference.put(code, arrayList);
 								}
 							}
-						
+							//check forward reference data
+							if(forwardReference.containsKey(arr[0])) {
+								ArrayList<String> arrayList = forwardReference.get(arr[0]);
+								Iterator<String> iterator = arrayList.iterator();
+								while(iterator.hasNext()) {
+									String key = iterator.next();
+									Symbol symbol2 = symbolTable.get(key);
+									symbol2.setAddress(symbol2.getAddress() + symbolTable.get(arr[0]).getAddress());
+								}
+								forwardReference.remove(arr[0]);
+							}
 							writeIntermediateCode("\n");
 						}
 						else if(arr[1].equals("ORIGIN")) {
