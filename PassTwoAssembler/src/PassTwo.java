@@ -39,7 +39,7 @@ public class PassTwo {
 		bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream("SYMTAB.txt")));
 		while((line = bufferedReader.readLine()) != null) {
 			String []arr = line.split(" ");
-			symbols.put(zerosPad(String.valueOf(symbolIndexTrack++), 2),new Symbol(arr[0], Integer.parseInt(arr[1])));
+			symbols.put(zerosPad(String.valueOf(symbolIndexTrack++), 2),new Symbol(arr[1], Integer.parseInt(arr[2])));
 		}
 		bufferedReader.close();
 	}
@@ -48,7 +48,7 @@ public class PassTwo {
 		bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream("LITTAB.txt")));
 		while((line = bufferedReader.readLine()) != null) {
 			String []arr = line.split(" ");
-			literals.put(zerosPad(String.valueOf(literalIndexTrack++), 2),new Literal(arr[0], Integer.parseInt(arr[1])));
+			literals.put(zerosPad(String.valueOf(literalIndexTrack++), 2),new Literal(arr[1], Integer.parseInt(arr[2])));
 		}
 		bufferedReader.close();
 	}
@@ -84,14 +84,16 @@ public class PassTwo {
 						//start symbol - do nothing
 					}
 					else if(data.contains("DL")){
-						writeData("00 0");
-						String second = matchList.get(1);
-						second = second.substring(second.indexOf(',')+1, second.length());
-						writeData(" "+zerosPad(second,3));
+						if(!matchList.get(0).equals("DL,02")) {
+							writeData("+00 0");
+							String second = matchList.get(1);
+							second = second.substring(second.indexOf(',')+1, second.length());
+							writeData(" "+zerosPad(second,3));
+						}
 					}
 					else if(data.contains("IS")) {
 						data = data.substring(data.indexOf(',')+1, data.length());
-						writeData(data + " ");
+						writeData("+" + data + " ");
 						if(matchList.size() > 1) {
 							
 							String secondData = matchList.get(1);
