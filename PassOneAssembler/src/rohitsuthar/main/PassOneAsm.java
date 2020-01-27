@@ -29,12 +29,14 @@ public class PassOneAsm {
 		private int symbol_table_track = 0;
 		private int literal_table_track = 0;
 		private boolean isPresent = false;
+		private LinkedHashMap<String, ArrayList<String>> forwardReference;
 		
 		public PassOneAsm() {
 			literalTable = new ArrayList<LinkedHashMap<String,Integer>>();
 			symbolTable = new LinkedHashMap<String, Symbol>();
 			poolTable = new ArrayList<Integer>();
 			mnemonics = new HashMap<String, MnemonicsEntry>();
+			forwardReference = new LinkedHashMap<String, ArrayList<String>>();
 			try {
 				getMnemonicsData();
 				icBufferedWriter = new BufferedWriter(new FileWriter("IC.txt"));
@@ -165,13 +167,24 @@ public class PassOneAsm {
 						writeIntermediateCode("\n");
 						Symbol symbol = symbolTable.get(arr[0]);
 						symbol.setAddress(lineCount);
-						symbolTable.replace(arr[0], symbol);
 						if(arr[1].equals("DS")) {
 							lineCount += Integer.parseInt(arr[2]);
 						}
 						else {
 							lineCount++;
 						}
+						
+						//check forward reference data
+						if(forwardReference.containsKey(arr[0])) {
+							ArrayList<String> arrayList = forwardReference.get(arr[0]);
+							Iterator<String> iterator = arrayList.iterator();
+							while(iterator.hasNext()) {
+								String key = iterator.next();
+								Symbol symbol2 = symbolTable.get(key);
+								symbol2.setAddress(symbol2.getAddress() + symbolTable.get(arr[0]).getAddress());
+							}
+						}
+						
 					}
 					else {
 						if(arr[1].equals("START")) {
@@ -189,14 +202,37 @@ public class PassOneAsm {
 							String code = data.substring(0, index);
 							int num = Integer.parseInt(data.substring(index+1,data.length()));
 							
-							Symbol symbol = symbolTable.get(code);
-							Symbol symbol1 = symbolTable.get(arr[0]);
-							if(data.contains("+")) {
-								symbol1.setAddress(symbol.getAddress() + num);
+							if(symbolTable.containsKey(code)) {
+								Symbol symbol = symbolTable.get(code);
+								Symbol symbol1 = symbolTable.get(arr[0]);
+								if(data.contains("+")) {
+									symbol1.setAddress(symbol.getAddress() + num);
+								}
+								else if(data.contains("-")) {
+									symbol1.setAddress(symbol.getAddress() - num);
+								}
 							}
-							else if(data.contains("-")) {
-								symbol1.setAddress(symbol.getAddress() - num);
+							else {
+								//symbol is not present in the symbol table so consider forward referencing
+								symbolTable.put(code, new Symbol(symbol_table_track++,-1));
+								Symbol symbol1 = symbolTable.get(arr[0]);
+								if(data.contains("+")) {
+									symbol1.setAddress(0 + num);
+								}
+								else if(data.contains("-")) {
+									symbol1.setAddress(0 - num);
+								}
+								if(forwardReference.containsKey(code)) {
+									ArrayList<String> arrayList = forwardReference.get(code);
+									arrayList.add(arr[0]);
+								}
+								else {
+									ArrayList<String> arrayList = new ArrayList<String>();
+									arrayList.add(arr[0]);
+									forwardReference.put(code, arrayList);
+								}
 							}
+						
 							writeIntermediateCode("\n");
 						}
 						else if(arr[1].equals("ORIGIN")) {
