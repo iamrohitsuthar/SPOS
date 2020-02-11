@@ -1,0 +1,4 @@
+1 MOVER (P,2), (P,0)
+2 ADD (P,2), (P,1)
+3 MOVEM (P,2), (P,0)
+4 MEND
