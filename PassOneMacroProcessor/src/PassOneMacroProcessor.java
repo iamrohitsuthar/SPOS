@@ -88,7 +88,10 @@ public class PassOneMacroProcessor {
 							MDT.append(MacroTablePointer + " " + splittedInstructions[0]);
 							for(int i = 1 ; i < splittedInstructions.length ; i++) {
 								String extract = splittedInstructions[i].replaceAll("[^a-zA-Z_]+", "");
-								MDT.append(" (P,"+PNTAB.indexOf(extract.trim()) + ")");
+								if(i < splittedInstructions.length - 1 )
+									MDT.append(" (P,"+PNTAB.indexOf(extract.trim()) + "),");
+								else
+									MDT.append(" (P,"+PNTAB.indexOf(extract.trim()) + ")");
 							}
 							MDT.append("\n");
 							MacroTablePointer++;
