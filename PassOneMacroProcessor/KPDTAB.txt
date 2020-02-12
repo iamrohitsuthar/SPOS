@@ -1,4 +1,0 @@
-1 R AREG
-2 MEM_VAL null
-3 INCR_VAL null
-4 REG null

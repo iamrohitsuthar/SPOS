@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 
 public class PassTwoMacroProcessor {
 	private BufferedWriter bufferedWriter = null;
@@ -54,7 +55,18 @@ public class PassTwoMacroProcessor {
 				MDT.add(params[1]);			
 		}
 		bufferedReader.close();
-		
+	}
+	
+	private String getFromHashMap(int index) {
+		int temp = 1;
+		String value = null;
+		for ( Entry<String, String> e : KPDTAB.entrySet() ) {
+		    value = e.getValue();
+		    if(temp == index)
+		    	break;
+		    index++;
+		}
+		return value;
 	}
 	
 	public void parse(BufferedReader bufferedReader) throws IOException {
@@ -62,8 +74,13 @@ public class PassTwoMacroProcessor {
 			String parts[] = line.split(" ");
 			if(MNT.containsKey(parts[0])) {
 				//macro call
+				APTAB.clear();
+				Msg.println("HERE: "+parts[0]);
+				
 				int pp = MNT.get(parts[0]).getPositionalParams();
 				int kp = MNT.get(parts[0]).getKeywordParams();
+				int kpdtabPointer = Integer.parseInt(MNT.get(parts[0]).getKeywordsDefPointer());
+				int total = pp + kp;
 				
 				int positionalPar = 1;
 				for(int i = 1 ; i <= pp ; i++) {
@@ -72,16 +89,48 @@ public class PassTwoMacroProcessor {
 					APTAB.add(extract.trim());
 				}
 				int keywordPar = positionalPar;
-				for(int j = 1 ; j <= kp ; j++) {
-					String extract = parts[positionalPar++].replaceAll("[,]+", "");
-					Msg.println("APTAB: "+extract);
-					APTAB.add(extract.trim());
+				for(int j = 0 ; j < kp ; j++) {
+					if((parts.length-1) >= keywordPar) {
+						String extract = parts[keywordPar].replaceAll("[,]+", "");
+						extract = extract.substring(extract.indexOf("=")+1);
+						Msg.println("APTAB No Default: "+extract);
+						APTAB.add(extract.trim());
+					}
+					else {
+						//default value
+						String temp = getFromHashMap(kpdtabPointer+j);
+						Msg.println("APTAB Default value: "+ temp);
+						APTAB.add(temp.trim());
+					}
+					keywordPar++;
 				}
 				
+				int mdtPointer = Integer.parseInt(MNT.get(parts[0]).getMacroDefPointer());
+				Msg.println(mdtPointer);
+				String ins = MDT.get(mdtPointer-1);
+				while(!ins.equals("MEND")) {
+					Msg.println(ins);
+					String params[] = ins.split(" ");
+					bufferedWriter.write(params[0] + " ");
+					for(int i = 1; i < params.length; i++) {
+						String temp = params[i].replaceAll("[^0-9]", "");
+						//Msg.println("temp: "+temp);
+						//Msg.println(APTAB.get(Integer.parseInt(temp)));
+						if(i == params.length - 1)
+							bufferedWriter.write(APTAB.get(Integer.parseInt(temp)));
+						else
+							bufferedWriter.write(APTAB.get(Integer.parseInt(temp)) + ", ");
+					}
+					bufferedWriter.write("\n");
+					ins = MDT.get(++mdtPointer-1);
+				}
 			}
 			else {
 				bufferedWriter.write(line + "\n");
 			}
 		}
+		Msg.println("HERE LAST");
+		bufferedWriter.flush();
+		bufferedWriter.close();
 	}
 }
