@@ -98,6 +98,7 @@ public class PassOneMacroProcessor {
 							macroBodyInstructions = bufferedReader.readLine();
 						}
 						MDT.append(MacroTablePointer + " " + "MEND" + "\n");
+						MacroTablePointer++;
 						if(macroBodyInstructions.equals("MEND")) {
 							PNTAB.clear();
 							ppCount = 0;
