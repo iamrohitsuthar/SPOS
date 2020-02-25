@@ -116,7 +116,7 @@ public class PassTwoMacroProcessor {
 				while(!ins.equals("MEND")) {
 					Msg.println(ins);
 					String params[] = ins.split(" ");
-					bufferedWriter.write(params[0] + " ");
+					bufferedWriter.write("+" + params[0] + " ");
 					for(int i = 1; i < params.length; i++) {
 						String temp = params[i].replaceAll("[^0-9]", "");
 						if(i == params.length - 1)
