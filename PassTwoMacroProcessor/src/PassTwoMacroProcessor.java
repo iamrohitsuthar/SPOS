@@ -118,11 +118,16 @@ public class PassTwoMacroProcessor {
 					String params[] = ins.split(" ");
 					bufferedWriter.write("+" + params[0] + " ");
 					for(int i = 1; i < params.length; i++) {
-						String temp = params[i].replaceAll("[^0-9]", "");
-						if(i == params.length - 1)
-							bufferedWriter.write(APTAB.get(Integer.parseInt(temp)));
-						else
-							bufferedWriter.write(APTAB.get(Integer.parseInt(temp)) + ", ");
+						if(params[i].contains("=")) {
+							bufferedWriter.write(params[i]);
+						}
+						else {
+							String temp = params[i].replaceAll("[^0-9]", "");
+							if(i == params.length - 1)
+								bufferedWriter.write(APTAB.get(Integer.parseInt(temp)));
+							else
+								bufferedWriter.write(APTAB.get(Integer.parseInt(temp)) + ", ");
+						}
 					}
 					bufferedWriter.write("\n");
 					ins = MDT.get(++mdtPointer-1);
