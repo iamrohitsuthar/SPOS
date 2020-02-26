@@ -58,7 +58,11 @@ public class PassOneMacroProcessor {
 								String key = string.substring(string.indexOf("&")+1, string.indexOf("="));
 								if(string.indexOf("=") < string.length() - 1) {
 									//default value is present
-									String value = string.substring(string.indexOf("=")+1);
+									String value;
+									if(string.contains(","))
+										value = string.substring(string.indexOf("=")+1,string.indexOf(","));
+									else
+										value = string.substring(string.indexOf("=")+1);
 									KPDTAB.put(key, value);
 								}
 								else {
@@ -87,11 +91,17 @@ public class PassOneMacroProcessor {
 							String splittedInstructions[] = macroBodyInstructions.split(" ");
 							MDT.append(MacroTablePointer + " " + splittedInstructions[0]);
 							for(int i = 1 ; i < splittedInstructions.length ; i++) {
-								String extract = splittedInstructions[i].replaceAll("[^a-zA-Z_]+", "");
-								if(i < splittedInstructions.length - 1 )
-									MDT.append(" (P,"+PNTAB.indexOf(extract.trim()) + "),");
-								else
-									MDT.append(" (P,"+PNTAB.indexOf(extract.trim()) + ")");
+								if(splittedInstructions[i].contains("=")) {
+									MDT.append(" "+splittedInstructions[i]);
+								}
+								else {
+									String extract = splittedInstructions[i].replaceAll("[^a-zA-Z_]+", "");
+									if(i < splittedInstructions.length - 1 )
+										MDT.append(" (P,"+PNTAB.indexOf(extract.trim()) + "),");
+									else
+										MDT.append(" (P,"+PNTAB.indexOf(extract.trim()) + ")");
+								}
+								
 							}
 							MDT.append("\n");
 							MacroTablePointer++;
