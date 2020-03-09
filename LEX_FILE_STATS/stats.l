@@ -4,7 +4,7 @@
 
 %%
 [" "]+	{words++;chars+=yyleng;}
-\n	{lines++; words++;chars++;}
+[\n]" "*	{lines++; words++;chars+=yyleng;}
 .	{chars++;}
 %%
 
