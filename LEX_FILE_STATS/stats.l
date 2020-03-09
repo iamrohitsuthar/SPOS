@@ -3,7 +3,7 @@
 %}
 
 %%
-" "	{words++;chars++;}
+[" "]+	{words++;chars+=yyleng;}
 \n	{lines++; words++;chars++;}
 .	{chars++;}
 %%
