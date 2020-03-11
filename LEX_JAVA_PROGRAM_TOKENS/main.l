@@ -17,14 +17,23 @@ RELATIONAL_OPERATORS "<"|"<="|">"|">="|"=="|"!="
 ARITHMATIC_OPERATORS "+"|"-"|"*"|"/"|"%"
 LOGICAL_OPERATORS "&&"|"||"|"!"
 STRING_LIT ["\""][a-zA-Z" "]*["\""]
+SINGLE_LINE_COMMENT ["//"].({ALPHABATES}|{DIGIT}|" ")*
+MULTI_LINE_COMMENT	["/*"].(\n|{ALPHABATES}|{DIGIT}|" "|\t|\s)*.["*/"]
+ARRAY {IDENTIFIER}."[]"
+FUNC_DEF ({ACCESS_SPECIFIER}" ")?{DATATYPE}" "[a-zA-Z]+"("({DATATYPE}" "{IDENTIFIER}(",")?)*") {"({ALPHABATES}|\t|\n|\s|" ")*"}"
 %%
+
 "import".*";"	{printf("%s ----> Preprocessor \n", yytext);}
+{FUNC_DEF} {printf("%s is function def \n", yytext);}
 {ACCESS_SPECIFIER}	{printf("%s ----> Access Specifier \n", yytext);}
 {DATATYPE}	{printf("%s ----> Datatype \n", yytext);}
 {KEYWORD}	{printf("%s ----> keyword \n", yytext);}
 {NUMBER}	{printf("%s ----> Number \n", yytext);}
 {REAL} {printf("%s ----> Real Number \n", yytext);}
 {STRING_LIT} {printf("%s ----> String Literal \n", yytext);}
+{MULTI_LINE_COMMENT} {printf("%s ----> is Multi line comment \n", yytext);}
+{SINGLE_LINE_COMMENT} {printf("%s ----> is single line comment \n", yytext);}
+{ARRAY} {printf("%s ----> is array \n", yytext);}
 {IDENTIFIER} {printf("%s ----> Identifier \n", yytext);}
 {ASSIGNMENT}	{printf("%s ----> Assignement \n", yytext);}
 {RELATIONAL_OPERATORS} {printf("%s ----> Relational Operators\n", yytext);}

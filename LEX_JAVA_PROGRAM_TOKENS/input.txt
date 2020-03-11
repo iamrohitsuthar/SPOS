@@ -2,7 +2,36 @@ import java.util.*;
 
 public class Sample {
     public static void main(String args[]) {
+    	//Variable Initialization
+
     	int a = 2;
+    	
+    	/* 
+    		System is class
+    		Out is object
+    		println is method 
+    	*/
+
         System.out.println("Hello World");
     }
-}
+
+    public void add() {
+		hi
+	}
+
+	public void add(int a) {
+		hi
+	}
+
+	public void add(int a,int b) {
+		hi
+	}
+		
+	public void add(int a,int b,int c) {
+		hi
+	}	
+
+	void main() {
+		hi
+	}
+   
