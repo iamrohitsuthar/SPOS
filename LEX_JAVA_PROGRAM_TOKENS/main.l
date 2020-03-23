@@ -20,11 +20,9 @@ STRING_LIT ["\""][a-zA-Z" "]*["\""]
 SINGLE_LINE_COMMENT ["//"].({ALPHABATES}|{DIGIT}|" ")*
 MULTI_LINE_COMMENT	["/*"].(\n|{ALPHABATES}|{DIGIT}|" "|\t|\s)*.["*/"]
 ARRAY {IDENTIFIER}."[]"
-FUNC_DEF ({ACCESS_SPECIFIER}" ")?{DATATYPE}" "[a-zA-Z]+"("({DATATYPE}" "{IDENTIFIER}(",")?)*") {"({ALPHABATES}|\t|\n|\s|" ")*"}"
 %%
 
 "import".*";"	{printf("%s ----> Preprocessor \n", yytext);}
-{FUNC_DEF} {printf("%s is function def \n", yytext);}
 {ACCESS_SPECIFIER}	{printf("%s ----> Access Specifier \n", yytext);}
 {DATATYPE}	{printf("%s ----> Datatype \n", yytext);}
 {KEYWORD}	{printf("%s ----> keyword \n", yytext);}

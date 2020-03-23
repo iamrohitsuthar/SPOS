@@ -14,24 +14,4 @@ public class Sample {
 
         System.out.println("Hello World");
     }
-
-    public void add() {
-		hi
-	}
-
-	public void add(int a) {
-		hi
-	}
-
-	public void add(int a,int b) {
-		hi
-	}
-		
-	public void add(int a,int b,int c) {
-		hi
-	}	
-
-	void main() {
-		hi
-	}
-   
+}
