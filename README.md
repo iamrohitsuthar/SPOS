@@ -33,3 +33,6 @@ Write a Java program using OOP features to implement the following scheduling al
 * SJF (Preemptive)
 * Priority (Non-Preemptive)
 * Round Robin (Preemptive)
+
+2. [Banker's Algorithm](https://github.com/iamrohitsuthar/SPOS/tree/master/Bankers_Algorithm)<br/>
+Write a java program to implement Banker's Algorithm.
