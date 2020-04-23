@@ -1,0 +1,4 @@
+javac SampleDLL.java
+javah SampleDLL
+gcc -o libSampleDLL.so -shared -fPIE -I /usr/lib/jvm/java-8-openjdk/include/linux/ -I /usr/lib/jvm/java-8-openjdk/include SampleDLL.c
+java SampleDLL
